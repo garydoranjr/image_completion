@@ -1,0 +1,39 @@
+Interior-point code for nuclear norm minimization (version 1.0). 
+
+Copyright (c) 2009 Zhang Liu and Lieven Vandenberghe.
+
+The algorithm is described in the paper "Interior-point method for nuclear 
+norm approximation with application to system identification" 
+(Z. Liu and L. Vandenberghe) 
+<http://www.ee.ucla.edu/~vandenbe/publications/nucnrm.pdf>.
+
+
+The file nucnrm.py contains a function nrmapp() for solving linear nuclear 
+norm approximation problems with quadratic regularization.
+
+The file sysid.py contains functions for system identification based on
+regularized nuclear norm minimization.
+
+Three examples are included:
+
+    ex_nna.py: solves a randomly generated example
+
+    ex_sysid.py: a system identification example
+
+    ex_tradeoff.py: plots a trade-off curve of nuclear norm || A(X) - B||_*
+        verxus || x - x0 ||_2^2.
+        
+
+License.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+GNU General Public License for more details.
+
+A copy of the GPL license can be found in the file gpl.txt.
