@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 from cvxopt import spmatrix, matrix as cvxmat
-from numpy import nonzero, reshape, asarray, matrix, ravel
+import numpy as np
+from numpy import nonzero, reshape, asarray, matrix, ravel, array
 from numpy.random import random, seed
 from PIL import Image
 
+from matplotlib.pyplot import figure, cm, show
+
 from nucnrm import nrmapp
 
-from pylab import *
 def main(filename, missingness, width, height):
     """
     Usage:
@@ -29,19 +31,40 @@ def main(filename, missingness, width, height):
         if height is None:
             height = width*image.size[1]/image.size[0]
         image = image.resize((width, height))
-    image_matrix = asarray(image)
+    image_matrix = array(asarray(image))
     missing = missing_matrix(image_matrix, missingness)
 
     reconstructed = reconstruct(image_matrix, missing)
-    recons_image = Image.fromarray(reconstructed, mode='L')
 
-    dpi = rcParams['figure.dpi']
-    figsize = recons_image.size[0]/dpi, recons_image.size[1]/dpi
+    fig = figure()
+    sp_args = { 'frameon': False,
+                'xticks': [],
+                'yticks': [] }
+    im_args = { 'cmap': 'gray',
+                'vmin': 0,
+                'vmax': 255,
+                'interpolation': 'nearest' }
+    # Original
+    ax = fig.add_subplot(221, **sp_args)
+    im = ax.imshow(image_matrix, **im_args)
 
-    figure(figsize=figsize)
-    ax = axes([0,0,1,1], frameon=False)
-    ax.set_axis_off()
-    im = imshow(recons_image, origin='lower', cmap=cm.gray, interpolation='nearest')
+    # Reconstructed
+    ax = fig.add_subplot(222, **sp_args)
+    im = ax.imshow(reconstructed, **im_args)
+
+    # Missing
+    missing_data = array(asarray(image.convert('RGB')))
+    for x, y in zip(*nonzero(missing)):
+        missing_data[x, y, :] = (0xFF, 0, 0)
+    ax = fig.add_subplot(223, **sp_args)
+    im = ax.imshow(missing_data, interpolation='nearest')
+
+    # Difference
+    diff = np.abs(array(reconstructed, dtype=float) -
+                  array(image_matrix, dtype=float))
+    diff = array(diff, dtype=image_matrix.dtype)
+    ax = fig.add_subplot(224, **sp_args)
+    im = ax.imshow(diff, **im_args)
 
     show()
 
