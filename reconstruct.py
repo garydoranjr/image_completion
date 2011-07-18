@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-from cvxopt import sparse, spmatrix, matrix as cvxmat
-from numpy import nonzero, vstack, reshape, asarray, matrix, zeros, ones, ravel
+from cvxopt import spmatrix, matrix as cvxmat
+from numpy import nonzero, reshape, asarray, matrix, ravel
 from numpy.random import random, seed
 from PIL import Image
 
@@ -47,40 +47,35 @@ def main(filename, missingness, width, height):
 
 def missing_matrix(data, rate):
     """
-    Returns a boolen matrix, where an
-    entry is True if the corresponding
-    value in data should be missing
+    Returns a boolen matrix, where an entry is True if the
+    corresponding value in data should be missing.
     """
     return (random(data.shape) <= rate)
 
 def reconstruct(data_matrix, missing_matrix):
+    """
+    Reconstructs the data_matrix after the pixels indicated in the
+    missing_matrix have been removed.
+    """
     flipped = (data_matrix.shape[0] < data_matrix.shape[1])
     if flipped:
         data_matrix = data_matrix.T
         missing_matrix = missing_matrix.T
 
     unknown_indices = nonzero(ravel(missing_matrix, order='F'))[0]
-    k = len(unknown_indices)
-    A = spmatrix(1.0, unknown_indices, range(k), (data_matrix.size, k))
     known = matrix(data_matrix, dtype=float)
     known[nonzero(missing_matrix)] = 0.0
+    u = len(unknown_indices)
+    A = spmatrix(1.0, unknown_indices, range(u), (data_matrix.size, u))
     B = cvxmat(known)
-    I = spmatrix(1.0, range(k), range(k))
-    G = sparse([-I, I])
-    h = cvxmat(ones((2*k, 1)))
-    G = -I
-    h = cvxmat(ones((k, 1)))
 
-    result = nrmapp(A, B)
-    x = result['x']
+    x = nrmapp(A, B)['x']
     if x is not None:
         Ax = reshape(array(A*cvxmat(x)), data_matrix.shape, order='F')
-        reconstructed = Ax + B
-        retval = array(reconstructed, dtype=data_matrix.dtype)
+        retval = array(Ax + B, dtype=data_matrix.dtype)
         if flipped:
-            return retval.T
-        else:
-            return retval
+            retval = retval.T
+        return retval
     else:
         raise Exception("Error during optimization.")
 
