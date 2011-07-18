@@ -41,7 +41,7 @@ def main(filename, missingness, width, height):
     figure(figsize=figsize)
     ax = axes([0,0,1,1], frameon=False)
     ax.set_axis_off()
-    im = imshow(recons_image, origin='lower', cmap=cm.gray)
+    im = imshow(recons_image, origin='lower', cmap=cm.gray, interpolation='nearest')
 
     show()
 
@@ -54,8 +54,6 @@ def missing_matrix(data, rate):
     return (random(data.shape) <= rate)
 
 def reconstruct(data_matrix, missing_matrix):
-    olddtype = data_matrix.dtype
-    data_matrix = (data_matrix / 128.0) - 1.0
     flipped = (data_matrix.shape[0] < data_matrix.shape[1])
     if flipped:
         data_matrix = data_matrix.T
@@ -78,7 +76,7 @@ def reconstruct(data_matrix, missing_matrix):
     if x is not None:
         Ax = reshape(array(A*cvxmat(x)), data_matrix.shape, order='F')
         reconstructed = Ax + B
-        retval = array((reconstructed + 1)*128, dtype=olddtype)
+        retval = array(reconstructed, dtype=data_matrix.dtype)
         if flipped:
             return retval.T
         else:
